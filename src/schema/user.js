@@ -12,9 +12,9 @@ export default gql`
       username: String!
       email: String!
       password: String!
-    ): Token!
+    ): SignUpData!
 
-    signIn(login: String!, password: String!): Token!
+    signIn(login: String!, password: String!): SignInData!
     updateUser(firstname: String!, lastname: String!): User!
     deleteUser(id: ID!): Boolean!
     verifiedEmail(verificationToken: String!): Boolean!
@@ -26,6 +26,17 @@ export default gql`
   type Token {
     token: String!
     srp: Boolean
+  }
+
+  type SignUpData {
+    token: String!
+    isSuccess: Boolean
+  }
+
+  type SignInData{
+    token: String!
+    isSuccess: Boolean
+    user: User
   }
 
   type User {

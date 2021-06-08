@@ -20,10 +20,12 @@ export default {
     users: async (parent, args, { models }) => { const user = await models.User.find(); return user; },
     user: async (parent, { id }, { models }) => { const user = await models.User.findById(id); return user; },
     me: async (parent, args, { models, me }) => {
+      console.log({me, models})
       if (!me) {
         return null;
       }
       const user = await models.User.findById(me.id);
+      console.log({user})
       return user;
     },
   },
@@ -42,7 +44,7 @@ export default {
         verificationToken: Math.floor(100000 + Math.random() * 900000),
       });
       Email.sendVerifyEmail(email, user.verificationToken);
-      return { token: createToken(user, secret, '10m') };
+      return { token: createToken(user, secret, '10m'), isSuccess: true };
     },
 
     signIn: async (
@@ -63,12 +65,12 @@ export default {
           { forgotToken: password, resetPasswordExpires: { $gt: Date.now() } },
         );
         if (forgotPass) {
-          return { token: createToken(user, secret, '1h'), srp: true };
+          return { token: createToken(user, secret, '1h'), srp: true, isSuccess: true, user };
         }
         throw new AuthenticationError('Invalid password.');
       }
 
-      return { token: createToken(user, secret, '1h') };
+      return { token: createToken(user, secret, '1h'), isSuccess: true, user };
     },
 
     updateUser: combineResolvers(
