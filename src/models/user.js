@@ -7,7 +7,6 @@ import isEmail from 'validator/lib/isEmail';
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    unique: true,
     required: true,
   },
   email: {
@@ -19,18 +18,34 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 7,
-    maxlength: 42,
+    minlength: 6,
+    maxlength: 12,
   },
   role: {
     type: String,
   },
-  firstname: {
+
+  // NEW
+  status: {
     type: String,
   },
-  lastname: {
+  gender: {
     type: String,
   },
+  address: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  dob: {
+    type: Date,
+  },
+  signUpDate: {
+    type: Date,
+  },
+  // END NEW
+
   isVerified: {
     type: Boolean,
   },
@@ -41,15 +56,16 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   resetPasswordExpires: Date,
+
 });
 
-userSchema.statics.findByLogin = async function (login) {
+userSchema.statics.findByLogin = async function (username) {
   let user = await this.findOne({
-    username: login,
+    username: username,
   });
 
   if (!user) {
-    user = await this.findOne({ email: login });
+    user = await this.findOne({ email: username });
   }
 
   return user;

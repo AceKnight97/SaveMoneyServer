@@ -5,6 +5,7 @@ import Message from './message';
 import Expenditure from './expenditure';
 import Setting from './setting';
 import Category from './category';
+import UserSpending from './userSpending';
 
 const connectDb = () => {
   if (process.env.TEST_DATABASE_URL) {
@@ -30,7 +31,9 @@ const connectDb = () => {
   throw new Error('missing db url');
 };
 
-const models = { User, Message, Expenditure, Category, Setting };
+const models = {
+  User, Message, Expenditure, Category, Setting, UserSpending
+};
 
 export { connectDb };
 

@@ -1,11 +1,11 @@
-import jwt from 'jsonwebtoken';
-import { combineResolvers } from 'graphql-resolvers';
-import { AuthenticationError, UserInputError } from 'apollo-server';
-import moment from 'moment';
-import generator from 'generate-password';
+import jwt from "jsonwebtoken";
+import { combineResolvers } from "graphql-resolvers";
+import { AuthenticationError, UserInputError } from "apollo-server";
+import moment from "moment";
+import generator from "generate-password";
 
-import { isAdmin, isAuthenticated } from './authorization';
-import Email from '../utils/email';
+import { isAdmin, isAuthenticated } from "./authorization";
+import Email from "../utils/email";
 
 const createToken = async (user, secret, expiresIn) => {
   const { id, email, username, role } = user;
@@ -17,15 +17,19 @@ const createToken = async (user, secret, expiresIn) => {
 
 export default {
   Query: {
-    users: async (parent, args, { models }) => { const user = await models.User.find(); return user; },
-    user: async (parent, { id }, { models }) => { const user = await models.User.findById(id); return user; },
+    users: async (parent, args, { models }) => {
+      const user = await models.User.find();
+      return user;
+    },
+    user: async (parent, { id }, { models }) => {
+      const user = await models.User.findById(id);
+      return user;
+    },
     me: async (parent, args, { models, me }) => {
-      console.log({me, models})
       if (!me) {
         return null;
       }
       const user = await models.User.findById(me.id);
-      console.log({user})
       return user;
     },
   },
@@ -34,7 +38,7 @@ export default {
     signUp: async (
       parent,
       { username, email, password },
-      { models, secret },
+      { models, secret }
     ) => {
       const user = await models.User.create({
         username,
@@ -42,46 +46,53 @@ export default {
         password,
         isVerified: false,
         verificationToken: Math.floor(100000 + Math.random() * 900000),
+        signUpDate: moment()
       });
       Email.sendVerifyEmail(email, user.verificationToken);
-      return { token: createToken(user, secret, '10m'), isSuccess: true };
+      return { token: createToken(user, secret, "10m"), isSuccess: true };
     },
 
-    signIn: async (
-      parent,
-      { login, password },
-      { models, secret },
-    ) => {
-      const user = await models.User.findByLogin(login);
+    signIn: async (parent, { username, password }, { models, secret }) => {
+      const user = await models.User.findByLogin(username);
 
       if (!user) {
-        throw new UserInputError(
-          'No user found with this login credentials.',
-        );
+        throw new UserInputError("No user found with this login credentials.");
       }
       const isValid = await user.validatePassword(password);
       if (!isValid) {
-        const forgotPass = await models.User.findOne(
-          { forgotToken: password, resetPasswordExpires: { $gt: Date.now() } },
-        );
+        const forgotPass = await models.User.findOne({
+          forgotToken: password,
+          resetPasswordExpires: { $gt: Date.now() },
+        });
         if (forgotPass) {
-          return { token: createToken(user, secret, '1h'), srp: true, isSuccess: true, user };
+          return {
+            token: createToken(user, secret, "1h"),
+            srp: true,
+            isSuccess: true,
+            user,
+          };
         }
-        throw new AuthenticationError('Invalid password.');
+        throw new AuthenticationError("Invalid password.");
       }
 
-      return { token: createToken(user, secret, '1h'), isSuccess: true, user };
+      return { token: createToken(user, secret, "1h"), isSuccess: true, user };
     },
 
     updateUser: combineResolvers(
       isAuthenticated,
-      async (parent, { firstname, lastname }, { models, me }) => {
+      async (
+        parent,
+        args,
+        { models, me }
+      ) => {
+        const { profileInput } = args;
         const user = await models.User.findByIdAndUpdate(
           me.id,
-          { firstname, lastname },
-          { new: true },
-        ); return user;
-      },
+          { ...profileInput },
+          { new: true }
+        );
+        return { isSuccess: !!user };
+      }
     ),
 
     deleteUser: combineResolvers(
@@ -94,25 +105,21 @@ export default {
           return true;
         }
         return false;
-      },
+      }
     ),
 
-    verifiedEmail: async (parent,
-      { verificationToken },
-      { models }) => {
+    verifiedEmail: async (parent, { verificationToken }, { models }) => {
       const verified = await models.User.findOneAndUpdate(
         { verificationToken },
         {
           isVerified: true,
-          verificationToken: '',
-        },
+          verificationToken: "",
+        }
       );
       return Boolean(verified);
     },
 
-    forgotPass: async (parent,
-      { email },
-      { models }) => {
+    forgotPass: async (parent, { email }, { models }) => {
       const user = await models.User.findOneAndUpdate(
         { email },
         {
@@ -120,59 +127,64 @@ export default {
             length: 10,
             numbers: true,
           }),
-          resetPasswordExpires: moment().add(1, 'h'),
+          resetPasswordExpires: moment().add(1, "h"),
         },
-        { new: true },
+        { new: true }
       );
       Email.sendForgotPassword(email, user.forgotToken);
       return Boolean(user);
     },
 
     resetPassword: combineResolvers(
-      isAuthenticated, async (parent,
-        { password },
-        { models, me }) => {
-        const user = await models.User.findById(
-          me.id,
-        );
+      isAuthenticated,
+      async (parent, { password }, { models, me }) => {
+        const user = await models.User.findById(me.id);
         if (!user.forgotToken) {
-          throw new AuthenticationError('Invalid password.');
+          throw new AuthenticationError("Invalid password.");
         }
-        const userNewPassword = await models.User.findByIdAndUpdate(me.id, {
-          password,
-          forgotToken: '',
-          resetPasswordExpires: undefined,
-        },
-        { new: true });
+        const userNewPassword = await models.User.findByIdAndUpdate(
+          me.id,
+          {
+            password,
+            forgotToken: "",
+            resetPasswordExpires: undefined,
+          },
+          { new: true }
+        );
         userNewPassword.save();
-        return { token: createToken(userNewPassword, process.env.SECRET, '10m') };
-      },
+        return {
+          token: createToken(userNewPassword, process.env.SECRET, "10m"),
+        };
+      }
     ),
 
     changePassword: combineResolvers(
       isAuthenticated,
       async (parent, { password, newPassword }, { models, me }) => {
-        const user = await models.User.findById(
-          me.id,
-        );
+        const user = await models.User.findById(me.id);
         const isValid = await user.validatePassword(password);
         if (!isValid) {
-          throw new AuthenticationError('Invalid password.');
+          throw new AuthenticationError("Invalid password.");
         }
-        const userNewPassword = await models.User.findByIdAndUpdate(me.id,
+        const userNewPassword = await models.User.findByIdAndUpdate(
+          me.id,
           { password: newPassword },
-          { new: true });
+          { new: true }
+        );
         userNewPassword.save();
-        return { token: createToken(userNewPassword, process.env.SECRET, '1h') };
-      },
+        return {
+          token: createToken(userNewPassword, process.env.SECRET, "1h"),
+        };
+      }
     ),
   },
 
   User: {
-    messages: async (user, args, { models }) => {
-      const messages = await models.Message.find({
-        userId: user.id,
-      }); return messages;
-    },
+    // messages: async (user, args, { models }) => {
+    //   const messages = await models.Message.find({
+    //     userId: user.id,
+    //   });
+    //   return messages;
+    // },
   },
 };

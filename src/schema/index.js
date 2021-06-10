@@ -1,10 +1,11 @@
-import { gql } from 'apollo-server-express';
+import { gql } from "apollo-server-express";
 
-import userSchema from './user';
-import messageSchema from './message';
-import categorySchema from './category';
-import expenditureSchema from './expenditure';
-import insightSchema from './insight';
+import userSchema from "./user";
+import messageSchema from "./message";
+import categorySchema from "./category";
+import expenditureSchema from "./expenditure";
+import insightSchema from "./insight";
+import userSpendingSchema from "./userSpending";
 
 const linkSchema = gql`
   scalar Date
@@ -22,4 +23,12 @@ const linkSchema = gql`
   }
 `;
 
-export default [linkSchema, userSchema, messageSchema, categorySchema, expenditureSchema, insightSchema];
+export default [
+  linkSchema,
+  userSchema,
+  messageSchema,
+  categorySchema,
+  expenditureSchema,
+  insightSchema,
+  userSpendingSchema,
+];
