@@ -18,12 +18,12 @@ export default gql`
     resetPassword(password: String!): Token!
     forgotPass(email: String!): Boolean!
   }
-  input ProfileInput{
+  input ProfileInput {
     username: String!
-      gender: String
-      address: String
-      phone: String
-      dob: Date
+    gender: String
+    address: String
+    phone: String
+    dob: Date
   }
 
   type Token {
@@ -57,7 +57,7 @@ export default gql`
   }
 
   type UpdateUserResponse {
-     isSuccess: Boolean!
-     message: String 
-    }
+    isSuccess: Boolean!
+    message: String
+  }
 `;

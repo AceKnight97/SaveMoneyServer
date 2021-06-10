@@ -1,8 +1,8 @@
 /* eslint-disable func-names */
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-import bcrypt from 'bcrypt';
-import isEmail from 'validator/lib/isEmail';
+import bcrypt from "bcrypt";
+import isEmail from "validator/lib/isEmail";
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
     required: true,
-    validate: [isEmail, 'No valid email address provided.'],
+    validate: [isEmail, "No valid email address provided."],
   },
   password: {
     type: String,
@@ -56,7 +56,9 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   resetPasswordExpires: Date,
-
+  userSpending: {
+    type: mongoose.Schema.Types.ObjectId, ref: 'UserSpending',
+  },
 });
 
 userSchema.statics.findByLogin = async function (username) {
@@ -71,11 +73,11 @@ userSchema.statics.findByLogin = async function (username) {
   return user;
 };
 
-userSchema.pre('remove', function (next) {
-  this.model('Message').deleteMany({ userId: this._id }, next);
+userSchema.pre("remove", function (next) {
+  this.model("Message").deleteMany({ userId: this._id }, next);
 });
 
-userSchema.pre('save', async function () {
+userSchema.pre("save", async function () {
   this.password = await this.generatePasswordHash();
 });
 
@@ -90,6 +92,6 @@ userSchema.methods.validatePassword = async function (password) {
   return result;
 };
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 export default User;

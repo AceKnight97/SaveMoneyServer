@@ -4,7 +4,6 @@ import userSchema from "./user";
 import messageSchema from "./message";
 import categorySchema from "./category";
 import expenditureSchema from "./expenditure";
-import insightSchema from "./insight";
 import userSpendingSchema from "./userSpending";
 
 const linkSchema = gql`
@@ -29,6 +28,5 @@ export default [
   messageSchema,
   categorySchema,
   expenditureSchema,
-  insightSchema,
   userSpendingSchema,
 ];

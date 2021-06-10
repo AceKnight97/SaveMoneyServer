@@ -2,11 +2,13 @@ import { gql } from "apollo-server-express";
 
 export default gql`
   extend type Query {
-    dailyInfo(date: Date!): SpendingResponse!
+    dailyInfo(date: String!): SpendingResponse!
+    insight(from: String!, to: String!): SpendingResponse!
   }
 
   extend type Mutation {
-    updateDailyInfo(dailyInput: DailyInput!): UpdateDailyInfoResponse!
+    addDailyInfo(input: AddDailyInput!): DailyInfoResponse!
+    updateDailyInfo(input: UpdateDailyInput!): DailyInfoResponse!
   }
 
   type Log {
@@ -23,20 +25,26 @@ export default gql`
 
   type SpendingResponse {
     id: ID!
-    date: Date!
+    date: String!
     logs: [Log]
     income: Float
     notes: String
   }
 
-  type UpdateDailyInfoResponse {
+  type DailyInfoResponse {
     isSuccess: Boolean!
     message: String
   }
 
-  input DailyInput {
+  input UpdateDailyInput {
     id: ID!
-    date: Date!
+    logs: [LogInput]
+    income: Float
+    notes: String
+  }
+
+  input AddDailyInput {
+    date: String!
     logs: [LogInput]
     income: Float
     notes: String

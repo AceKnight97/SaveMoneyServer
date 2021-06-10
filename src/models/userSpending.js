@@ -2,14 +2,20 @@ import mongoose from 'mongoose';
 
 const userSpendingSchema = new mongoose.Schema(
   {
-    date: Date,
-    title: {
+    date: {
       type: String,
       required: true,
     },
-    spending: Number,
-    detail: String,
-    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+    logs: [
+      {
+        _id: false,
+        title: String,
+        money: Number,
+        details: String,
+      }
+    ],
+    income: Number,
+    notes: String,
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   {

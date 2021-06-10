@@ -31,9 +31,4 @@ export default gql`
     pageInfo: PageInfo!
   }
 
-  type Insights{
-    expenditures: [Expenditure]
-    
-  }
-
 `;

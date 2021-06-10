@@ -18,6 +18,7 @@ const createToken = async (user, secret, expiresIn) => {
 export default {
   Query: {
     users: async (parent, args, { models }) => {
+      console.log({models: models.UserSpending})
       const user = await models.User.find();
       return user;
     },
